@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>הזמנה להכנסות והוצאות</title>
+<style>
+:root{--page:#f1f3f8;--bg:#fff;--text:#1c1917;--text2:#57534e;--hair:rgba(40,25,10,.12);--accent:#2563eb;--accent-soft:rgba(37,99,235,.1);--accent-text:#2563eb;--bad:#b91c1c}
+@media (prefers-color-scheme:dark){:root{--page:#0d0f14;--bg:#171a21;--text:#f5f1ec;--text2:#cdc5bc;--hair:rgba(255,255,255,.14);--accent:#2563eb;--accent-soft:rgba(96,165,250,.16);--accent-text:#93c5fd;--bad:#f87171}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:520px;margin:0 auto;padding:22px 18px 40px}
+h1{font-size:24px;margin:8px 0 4px}
+.card{background:var(--bg);border:1px solid var(--hair);border-radius:20px;padding:18px;margin:16px 0;box-shadow:0 2px 10px rgba(40,25,10,.06)}
+p{margin:8px 0}
+.small{font-size:13.5px;color:var(--text2)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin:10px 0 0;padding:6px 14px;border-radius:14px;border:1px solid var(--hair);background:transparent;color:var(--accent-text);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+textarea{width:100%;min-height:92px;margin-top:8px;padding:10px 12px;border:1px solid var(--hair);border-radius:12px;background:var(--page);color:var(--text);font:12.5px/1.4 ui-monospace,Menlo,Consolas,monospace;direction:ltr;text-align:left;resize:vertical}
+.tag{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--accent-soft);color:var(--accent-text);font-size:13px;font-weight:600}
+.warn{color:var(--bad);font-weight:600}
+ol{margin:6px 0 0;padding-inline-start:22px}
+li{margin:4px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>הזמנה להכנסות והוצאות</h1>
+<p class="small">הכנסות והוצאות היא אפליקציה שבה עוקבים אחרי הכנסות והוצאות ורואים אותן בגרפים ובטבלאות.</p>
+
+<section class="card" id="ok" hidden>
+<p><span class="tag" id="what"></span></p>
+<p id="who"></p>
+<p class="warn" id="tokenwarn" hidden>ההזמנה כוללת גם מפתח גישה לריפו. אל תעבירו אותה הלאה.</p>
+<a class="btn primary" id="open" href="#">פתיחה באפליקציה</a>
+<button class="btn" id="copy" type="button">העתקת הקוד</button>
+<details style="margin-top:12px"><summary class="small">אם הכפתור לא פותח את האפליקציה</summary>
+<ol class="small">
+<li>מעתיקים את הקוד (הכפתור למעלה, או מהתיבה שמתחת).</li>
+<li>באפליקציה, בהגדרות, בכרטיס "חיבור לספר", מדביקים בשדה "הזמנה".</li>
+<li>לוחצים "חיבור".</li>
+</ol>
+<textarea id="code" readonly aria-label="קוד ההזמנה"></textarea>
+</details>
+</section>
+
+<section class="card" id="bad" hidden>
+<p class="warn">הקישור לא שלם או לא תקין.</p>
+<p class="small">הוא צריך להסתיים בקוד ארוך שמתחיל ב־<bdi dir="ltr">financetracker:</bdi>. בקשו ממי ששלח לשלוח את ההזמנה שוב, או השתמשו בקוד כפי שהגיע בהודעה.</p>
+</section>
+
+<section class="card" id="app" hidden>
+<p><b>עוד אין לכם את האפליקציה?</b></p>
+<p class="small">מי שהזמין אתכם יכול לשלוח לכם את קובץ ההתקנה (APK) להתקנה בטלפון.</p>
+<a class="btn" id="apk" href="#" hidden>הורדת האפליקציה</a>
+</section>
+
+<p class="small">הקוד נמצא בכתובת אחרי הסימן # ולכן הדפדפן לא שולח אותו לשום שרת. הדף הזה לא שומר ולא סופר כלום.</p>
+</main>
+<script>
+(function(){
+// Where the app can be downloaded from, if there is a public link (leave empty: the button is hidden).
+var APK_URL='';
+var $=function(id){return document.getElementById(id);};
+var m=/financetracker:([A-Za-z0-9_-]{8,})/.exec(decodeURIComponent(location.hash.replace(/^#/,'')));
+if(APK_URL){$('apk').href=APK_URL;$('apk').hidden=false;}
+$('app').hidden=!APK_URL;
+if(!m){$('bad').hidden=false;return;}
+var code='financetracker:'+m[1],info=null;
+try{
+var b=m[1].replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
+var bin=atob(b),bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+info=JSON.parse(new TextDecoder().decode(bytes));
+}catch(e){}
+if(!info||info.v!==1||typeof info.r!=='string'){$('bad').hidden=false;return;}
+$('ok').hidden=false;
+// Only textContent and a link made of characters the code is made of: nothing from the code is ever put in as HTML.
+$('what').textContent=info.k?'הצטרפות לספר משותף':'ספר חדש משלכם';
+$('who').textContent=info.k?'מי שהזמין אתכם מצרף אתכם לאותו ספר, כך שכולכם רואים את אותן תנועות ומסתנכרנים ביניכם.':'ייפתח לכם ספר משלכם, באותו מקום שבו נשמרים הנתונים של מי שהזמין אתכם.';
+$('tokenwarn').hidden=!info.t;
+$('open').href='financetracker://join?code='+m[1];
+$('code').value=code;
+$('copy').addEventListener('click',function(){
+var done=function(){$('copy').textContent='הקוד הועתק';setTimeout(function(){$('copy').textContent='העתקת הקוד';},2500);};
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).then(done,function(){$('code').select();});
+else{$('code').select();try{document.execCommand('copy');done();}catch(e){}}
+});
+})();
+</script>
+</body>
+</html>
